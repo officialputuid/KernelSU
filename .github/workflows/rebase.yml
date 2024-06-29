@@ -1,0 +1,33 @@
+name: rebase
+
+on:
+  workflow_dispatch:
+
+jobs:
+  rebase:
+    name: auto rebase
+    runs-on: macos-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: set git configs
+        run: |
+          git config user.name "officialputuid"
+          git config user.email "officialputuid@hack.id"
+
+      - name: fetch and rebase
+        env:
+          REPO: https://github.com/tiann/KernelSU
+          BRANCH: main
+        run: |
+          git fetch ${{ env.REPO }} ${{ env.BRANCH }}
+          git rebase FETCH_HEAD
+
+      - name: force push changes
+        uses: ad-m/github-push-action@v0.6.0
+        with:
+          force: true
+          github_token: ${{ secrets.GITHUB_TOKEN }}
