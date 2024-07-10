@@ -3,7 +3,7 @@ agp = "8.5.0"
 kotlin = "2.0.0"
 ksp = "2.0.0-1.0.22"
 compose-bom = "2024.06.00"
-lifecycle = "2.8.1"
+lifecycle = "2.8.3"
 accompanist = "0.34.0"
 navigation = "2.7.7"
 activity-compose = "1.9.0"
@@ -76,3 +76,5 @@ sheet-compose-dialogs-list = { group = "com.maxkeppeler.sheets-compose-dialogs",
 sheet-compose-dialogs-input = { group = "com.maxkeppeler.sheets-compose-dialogs", name = "input", version.ref = "sheets-compose-dialogs" }
 
 markdown = { group = "io.noties.markwon", name = "core", version.ref = "markdown" }
+
+lsposed-cxx = { module = "org.lsposed.libcxx:libcxx", version = "27.0.11718014-beta1" }
