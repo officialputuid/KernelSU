@@ -1,0 +1,47 @@
+name: Auto Merge
+
+on:
+  workflow_dispatch:
+
+jobs:
+  auto-merge:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Import GPG key
+        id: import-gpg
+        uses: crazy-max/ghaction-import-gpg@v4
+        with:
+          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
+          passphrase: ${{ secrets.PASSPHRASE }}
+          git_user_signingkey: true
+          git_commit_gpgsign: true
+
+      - name: GPG user IDs
+        run: |
+          echo "fingerprint: ${{ steps.import-gpg.outputs.fingerprint }}"
+          echo "keyid:       ${{ steps.import-gpg.outputs.keyid }}"
+          echo "name:        ${{ steps.import-gpg.outputs.name }}"
+          echo "email:       ${{ steps.import-gpg.outputs.email }}"
+
+      - name: Configure Git
+        run: |
+          git config --global user.email "${{ steps.import-gpg.outputs.email }}"
+          git config --global user.name "${{ steps.import-gpg.outputs.name }}"
+          git config --global commit.gpgSign true
+          git config --global user.signingkey "${{ steps.import-gpg.outputs.keyid }}"
+
+      - name: Fetch and merge KernelSU repo
+        run: |
+          git clone https://officialputuid:${{ secrets.USER_TOKEN }}@github.com/officialputuid/KernelSU -b main
+          cd KernelSU
+          git fetch https://github.com/tiann/KernelSU main
+          git merge FETCH_HEAD
+          LC=$(git log FETCH_HEAD -1 --format=%H | cut -c1-7) && echo "LC=${LC}"
+          git add .
+          curl -Lo .git/hooks/commit-msg "${{ secrets.COMMIT_MSG }}"
+          chmod u+x .git/hooks/commit-msg
+          git commit --amend -m "[skip ci] Merge 'latest/${LC}' of https://github.com/tiann/KernelSU"
+          git push --force
