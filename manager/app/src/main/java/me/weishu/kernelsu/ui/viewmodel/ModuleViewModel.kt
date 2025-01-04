@@ -10,6 +10,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import me.weishu.kernelsu.ui.util.HanziToPinyin
 import me.weishu.kernelsu.ui.util.listModules
 import me.weishu.kernelsu.ui.util.overlayFsAvailable
 import org.json.JSONArray
@@ -48,13 +49,23 @@ class ModuleViewModel : ViewModel() {
 
     var isRefreshing by mutableStateOf(false)
         private set
+    var search by mutableStateOf("")
 
     var isOverlayAvailable by mutableStateOf(overlayFsAvailable())
         private set
 
+    var sortEnabledFirst by mutableStateOf(false)
+    var sortActionFirst by mutableStateOf(false)
     val moduleList by derivedStateOf {
-        val comparator = compareBy(Collator.getInstance(Locale.getDefault()), ModuleInfo::id)
-        modules.sortedWith(comparator).also {
+        val comparator =
+            compareBy<ModuleInfo>(
+                { if (sortEnabledFirst) !it.enabled else 0 },
+                { if (sortActionFirst) !it.hasWebUi && !it.hasActionScript else 0 },
+            ).thenBy(Collator.getInstance(Locale.getDefault()), ModuleInfo::id)
+        modules.filter {
+            it.id.contains(search, true) || it.name.contains(search, true) || HanziToPinyin.getInstance()
+                .toPinyinString(it.name).contains(search, true)
+        }.sortedWith(comparator).also {
             isRefreshing = false
         }
     }
